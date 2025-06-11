@@ -1,0 +1,18 @@
+﻿@model Timesheet
+
+<form asp-action="Submit" method="post">
+
+    <select asp-for="InternId" asp-items="ViewBag.Interns">
+        <option value="">-- Select Intern --</option>
+    </select>
+    <label>Date</label>
+    <input type="date" asp-for="Date" required />
+
+    <label>Task Description</label>
+    <textarea asp-for="TaskDescription" required></textarea>
+
+    <label>Hours Worked</label>
+    <input type="number" asp-for="HoursWorked" min="1" required />
+
+    <button type="submit">Submit Timesheet</button>
+</form>

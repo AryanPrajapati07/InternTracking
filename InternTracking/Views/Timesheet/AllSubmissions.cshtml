@@ -1,0 +1,23 @@
+﻿@model IEnumerable<Timesheet>
+
+<table>
+    <thead>
+        <tr><th>Intern</th><th>Date</th><th>Task</th><th>Hours</th><th>Status</th><th>Actions</th></tr>
+    </thead>
+    <tbody>
+        @foreach (var t in Model)
+        {
+            <tr>
+                <td>@t.Intern.Name</td>
+                <td>@t.Date.ToShortDateString()</td>
+                <td>@t.TaskDescription</td>
+                <td>@t.HoursWorked</td>
+                <td>@t.Status</td>
+                <td>
+                    <a href="@Url.Action("Approve", new { id = t.Id })">Approve</a> |
+                    <a href="@Url.Action("Reject", new { id = t.Id })">Reject</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
