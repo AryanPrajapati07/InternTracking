@@ -16,6 +16,25 @@ namespace InternTracking.Controllers
             this.context = context;
         }
 
+        public IActionResult AddIntern()
+        {
+            return View();
+        }
+        [HttpPost]
+        public IActionResult AddIntern(Intern intern)
+        {
+            context.Interns.Add(intern);
+            context.SaveChanges();
+            return RedirectToAction("AddIntern");
+        }
+
+        public IActionResult InternDetails()
+        {
+           var intern = context.Interns.ToList();
+            return View(intern);
+        }
+
+
         public IActionResult Submit()
         {
             ViewBag.Interns = new SelectList(context.Interns.ToList(), "Id", "Name");
@@ -33,8 +52,9 @@ namespace InternTracking.Controllers
 
         public IActionResult MyEntries()
         {
-            var data = context.Timesheets.ToList(); 
-            return View(data);
+            var all = context.Timesheets.Include(t => t.Intern).ToList();
+            
+            return View(all);
         }
 
         // For Admin/Supervisor to review

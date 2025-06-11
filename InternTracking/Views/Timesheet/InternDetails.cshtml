@@ -1,5 +1,4 @@
-﻿@model IEnumerable<Timesheet>
-
+﻿@model List<Intern>
 
 <!DOCTYPE html>
 <html>
@@ -12,22 +11,25 @@
     <div class="container mt-5">
 
         <div class="card-header text-black">
-            <h4 class="mb-0">Timesheet Entries</h4>
+            <h4 class="mb-0">Intern Details</h4>
         </div>
         <div class="card-body p-4">
             <table class="table table-bordered table-hover table-striped">
                 <thead class="table-light">
-            <tr><th>Name</th><th>Date</th><th>Task</th><th>Hours</th><th>Status</th></tr>
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>Email</th>
+        </tr>
     </thead>
     <tbody>
-        @foreach (var t in Model)
+        @foreach (var interns in Model)
         {
             <tr>
-                    <td>@t.Intern.Name</td>
-                    <td>@t.Date.ToShortDateString()</td>
-                <td>@t.TaskDescription</td>
-                <td>@t.HoursWorked</td>
-                <td>@t.Status</td>
+                <td>@interns.Id</td>
+                <td>@interns.Name</td>
+                <td>@interns.Email</td>
+               
             </tr>
         }
     </tbody>
