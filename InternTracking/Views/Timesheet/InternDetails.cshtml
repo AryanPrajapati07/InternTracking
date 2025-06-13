@@ -16,6 +16,10 @@
         <a href="@Url.Action("ExportInternDetailsToPdf", "TimeSheet")" class="btn btn-danger mb-3">
             Export to IronPDF
         </a>
+        <a href="@Url.Action("ExportToExcel", "Timesheet", new { searchTerm = ViewBag.SearchTerm })" class="btn btn-success mb-3">
+            Export to Excel
+        </a>
+
         <form method="get" asp-action="InternDetails" asp-controller="Timesheet" class="mb-3">
             <div class="input-group">
                 <input type="text" name="searchTerm" class="form-control" placeholder="Search by Name or Email" value="@ViewBag.SearchTerm" />

@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.EntityFrameworkCore;
 using System;
+using ClosedXML.Excel;
 
 namespace InternTracking.Controllers
 {
@@ -160,6 +161,46 @@ namespace InternTracking.Controllers
 
             await viewResult.View.RenderAsync(viewContext);
             return sw.ToString();
+        }
+
+        // Export to Excel Intern Details
+        public IActionResult ExportToExcel(string searchTerm = "")
+        {
+            var query = context.Interns.AsQueryable();
+            if (!String.IsNullOrEmpty(searchTerm))
+            {
+                searchTerm = searchTerm.ToLower();
+                query = query.Where(i => i.Name.ToLower().Contains(searchTerm) || i.Email.ToLower().Contains(searchTerm));
+            }
+            var interns = query.Select(i=>new
+            {
+                i.Id,
+                i.Name,
+                i.Email
+            }).ToList();
+
+            using (var workbook = new XLWorkbook())
+            {
+                var worksheet = workbook.Worksheets.Add("Interns");
+                worksheet.Cell(1, 1).Value = "Id";
+                worksheet.Cell(1, 2).Value = "Name";
+                worksheet.Cell(1, 3).Value = "Email";
+               
+                int row = 2;
+                foreach (var intern in interns)
+                {
+                    worksheet.Cell(row, 1).Value = intern.Id;
+                    worksheet.Cell(row, 2).Value = intern.Name;
+                    worksheet.Cell(row, 3).Value = intern.Email;
+                    row++;
+                }
+                using (var stream = new MemoryStream())
+                {
+                    workbook.SaveAs(stream);
+                   
+                    return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"Interns_{DateTime.Now:yyyyMMdd}.xlsx");
+                }
+            }
         }
 
 
