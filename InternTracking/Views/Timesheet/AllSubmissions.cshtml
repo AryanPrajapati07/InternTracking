@@ -15,6 +15,7 @@
             <div class="card-header text-black">
                 <h4 class="mb-0">All Timesheet Submissions</h4>
             </div>
+       
             <div class="card-body p-4">
                 <table class="table table-bordered table-hover table-striped">
                     <thead class="table-light">
@@ -50,6 +51,10 @@
                         }
                     </tbody>
                 </table>
+            <form asp-action="DownloadPdf" asp-controller="Timesheet" method="get">
+                <button type="submit" class="btn btn-primary">Download PDF</button>
+            </form>
+
             </div>
         </div>
     

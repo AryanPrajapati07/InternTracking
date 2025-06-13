@@ -1,3 +1,6 @@
+using BaselineTypeDiscovery;
+using DinkToPdf;
+using DinkToPdf.Contracts;
 using InternTracking.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,6 +13,12 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddSession();
 
 builder.Services.AddControllers();
+
+var context = new CustomAssemblyLoadContext();
+
+
+builder.Services.AddSingleton(typeof(IConverter), new SynchronizedConverter(new PdfTools()));
+
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
@@ -35,8 +44,15 @@ app.UseRouting();
 
 app.UseAuthorization();
 
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapControllerRoute(
+        name: "default",
+        pattern: "{controller=Home}/{action=Index}/{id?}");
+});
+
+//app.MapControllerRoute(
+//    name: "default",
+//    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
