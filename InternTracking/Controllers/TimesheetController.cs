@@ -1,5 +1,7 @@
-﻿using DinkToPdf;
+﻿using ClosedXML.Excel;
+using DinkToPdf;
 using DinkToPdf.Contracts;
+using InternTracking.Helpers;
 using InternTracking.Models;
 using InternTracking.Services;
 using IronPdf;
@@ -11,7 +13,6 @@ using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.EntityFrameworkCore;
 using System;
-using ClosedXML.Excel;
 
 namespace InternTracking.Controllers
 {
@@ -19,7 +20,7 @@ namespace InternTracking.Controllers
     {
         private readonly ApplicationDbContext context;
         private readonly IConverter converter;
-       
+        private readonly object _viewRenderService;
 
         public TimesheetController(ApplicationDbContext context,IConverter converter)
         {
@@ -275,6 +276,41 @@ namespace InternTracking.Controllers
                 }
             }
         }
+
+        //send PDF by email
+        public async Task<IActionResult> SendPdfEmail()
+        {
+            // Step 1: Get the intern list
+            var interns = context.Interns.ToList();
+
+            // Step 2: Render Razor View to HTML
+            var html = await RenderViewToStringAsync("InternDetails", interns);
+
+            // Step 3: Generate PDF in memory
+            var Renderer = new IronPdf.ChromePdfRenderer();
+            var pdf = Renderer.RenderHtmlAsPdf(html);
+            byte[] pdfBytes = pdf.BinaryData;
+
+            // Step 4: Email PDF without saving to disk
+            string toEmail = "aryan22.excelsior@gmail.com";
+            string subject = "Intern Report PDF";
+            string body = "Attached is the latest intern report.";
+            string fileName = "InternReport.pdf";
+
+            try
+            {
+                EmailService.SendEmailWithAttachmentFromStream(toEmail, subject, body, pdfBytes, fileName);
+                TempData["Success"] = $"PDF report sent to {toEmail}";
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Error: {ex.Message}";
+            }
+
+            return RedirectToAction("InternDetails");
+        }
+
+        
 
 
 
