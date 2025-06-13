@@ -13,6 +13,8 @@
         <div class="card-header text-black">
             <h4 class="mb-0">Intern Details</h4>
         </div>
+        <a href="@Url.Action("AddIntern")" class="btn btn-primary mb-3">Add New Intern</a>
+
         <a href="@Url.Action("ExportInternDetailsToPdf", "TimeSheet")" class="btn btn-danger mb-3">
             Export to IronPDF
         </a>
@@ -36,6 +38,7 @@
                         <th>Email</th>
                         <th>Department</th>
                         <th>Join Date</th>
+                        <th>Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -47,6 +50,11 @@
                             <td>@interns.Email</td>
                             <td>@interns.Department</td>
                             <td>@interns.JoinDate</td>
+                            <td>
+                                <a href="@Url.Action("EditIntern", new { id = interns.Id })" class="btn btn-sm btn-warning">Edit</a>
+                                <a href="@Url.Action("DeleteIntern", new { id = interns.Id })" class="btn btn-sm btn-danger">Delete</a>
+                            </td>
+
 
                
             </tr>

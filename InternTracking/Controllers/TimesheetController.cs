@@ -41,6 +41,44 @@ namespace InternTracking.Controllers
             return RedirectToAction("AddIntern");
         }
 
+        //Edit Intern
+        [HttpGet]
+        public IActionResult EditIntern(int id)
+        {
+            var intern = context.Interns.Find(id);
+            if (intern == null) return NotFound();
+            return View(intern);
+        }
+        [HttpPost]
+        public IActionResult EditIntern(Intern intern)
+        {
+            if (ModelState.IsValid)
+            {
+                context.Interns.Update(intern);
+                context.SaveChanges();
+                return RedirectToAction("InternDetails");
+            }
+            return View(intern);
+        }
+
+        //Delete Intern
+        [HttpGet]
+        public IActionResult DeleteIntern(int id)
+        {
+            var intern = context.Interns.Find(id);
+            if (intern == null) return NotFound();
+            return View(intern);
+        }
+        [HttpPost, ActionName("DeleteIntern")]
+        public IActionResult DeleteInternConfirmed(int id)
+        {
+            var intern = context.Interns.Find(id);
+            if (intern == null) return NotFound();
+            context.Interns.Remove(intern);
+            context.SaveChanges();
+            return RedirectToAction("InternDetails");
+        }
+
         //View of Intern Data
         public IActionResult InternDetails(string searchTerm, int page = 1)
         {
