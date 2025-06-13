@@ -21,7 +21,9 @@ namespace InternTracking.Controllers
                 { 
                     i.Id, 
                     i.Name, 
-                    i.Email 
+                    i.Email,
+                    i.Department,
+                    i.JoinDate
                 })
                 .ToList();
             return Json(interns);
@@ -32,7 +34,7 @@ namespace InternTracking.Controllers
         {
             var interns = _context.Interns
                 .Where(i => i.Id == id)
-                .Select(i => new { i.Id, i.Name, i.Email })
+                .Select(i => new { i.Id, i.Name, i.Email, i.Department ,i.JoinDate })
                 .FirstOrDefault();
 
             if(interns == null)
@@ -58,6 +60,8 @@ namespace InternTracking.Controllers
 
             intern.Name = updated.Name;
             intern.Email = updated.Email;
+            intern.Department = updated.Department;
+            intern.JoinDate = updated.JoinDate;
             _context.SaveChanges();
             return Json(new {status=200,message="Intern Updated"});
         }

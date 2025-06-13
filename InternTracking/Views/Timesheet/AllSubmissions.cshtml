@@ -15,6 +15,8 @@
             <div class="card-header text-black">
                 <h4 class="mb-0">All Timesheet Submissions</h4>
             </div>
+
+       
        
             <div class="card-body p-4">
                 <table class="table table-bordered table-hover table-striped">
@@ -22,6 +24,7 @@
                         <tr>
                             <th>Intern Name</th>
                             <th>Email</th>
+                        <th>Department</th>
                             <th>Date</th>
                             <th>Task</th>
                             <th>Hours</th>
@@ -35,6 +38,7 @@
                             <tr>
                                 <td>@t.Intern?.Name</td>
                                 <td>@t.Intern?.Email</td>
+                            <td>@t.Intern?.Department</td>
                                 <td>@t.Date.ToString("dd MMM yyyy")</td>
                                 <td>@t.TaskDescription</td>
                                 <td>@t.HoursWorked</td>
@@ -51,10 +55,10 @@
                         }
                     </tbody>
                 </table>
-            <form asp-action="DownloadPdf" asp-controller="Timesheet" method="get">
-                <button type="submit" class="btn btn-primary">Download PDF</button>
-            </form>
 
+            @* <a href="@Url.Action("ExportInternDetailsToPdf", "TimeSheet")" class="btn btn-danger mb-3">
+                Export to IronPDF
+            </a> *@
             </div>
         </div>
     

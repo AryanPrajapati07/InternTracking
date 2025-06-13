@@ -44,7 +44,7 @@ namespace InternTracking.Controllers
         //View of Intern Data
         public IActionResult InternDetails(string searchTerm, int page = 1)
         {
-            int pageSize = 2;
+            int pageSize = 5;
             var internsQuery = context.Interns.AsQueryable();
 
             if (!string.IsNullOrEmpty(searchTerm))
@@ -118,7 +118,36 @@ namespace InternTracking.Controllers
             return RedirectToAction("AllSubmissions");
         }
 
-        
+        //Create Dashboard for Interns
+        public IActionResult Dashboard()
+        {
+            var totalInterns = context.Interns.Count();
+            var thismonth = DateTime.Now.Month;
+            var thisyear = DateTime.Now.Year;
+
+            var newInternsThisMonth = context.Interns
+                .Where(i => i.JoinDate.Month == thismonth && i.JoinDate.Year == thisyear)
+                .Count();
+
+            var internsByDepartment = context.Interns
+                .GroupBy(i => i.Department)
+                .Select(g => new
+                {
+                    Department = g.Key,
+                    Count = g.Count()
+                })
+                .ToList();
+
+            ViewBag.TotalInterns = totalInterns;
+            ViewBag.NewInterns = newInternsThisMonth;
+            ViewBag.DeptChartLabels = internsByDepartment.Select(d=>d.Department).ToList();
+            ViewBag.DeptChartData = internsByDepartment.Select(d=>d.Count).ToList();
+
+
+            return View();
+        }
+
+
         // Export to PDF Intern Details
         public async Task<IActionResult> ExportInternDetailsToPdf()
         {
@@ -176,7 +205,9 @@ namespace InternTracking.Controllers
             {
                 i.Id,
                 i.Name,
-                i.Email
+                i.Email,
+                i.Department,
+                i.JoinDate
             }).ToList();
 
             using (var workbook = new XLWorkbook())
@@ -185,13 +216,17 @@ namespace InternTracking.Controllers
                 worksheet.Cell(1, 1).Value = "Id";
                 worksheet.Cell(1, 2).Value = "Name";
                 worksheet.Cell(1, 3).Value = "Email";
-               
+                worksheet.Cell(1, 4).Value = "Department";
+                worksheet.Cell(1, 5).Value = "Join Date";
+
                 int row = 2;
                 foreach (var intern in interns)
                 {
                     worksheet.Cell(row, 1).Value = intern.Id;
                     worksheet.Cell(row, 2).Value = intern.Name;
                     worksheet.Cell(row, 3).Value = intern.Email;
+                    worksheet.Cell(row, 4).Value = intern.Department;
+                    worksheet.Cell(row, 5).Value = intern.JoinDate.ToString("yyyy-MM-dd");
                     row++;
                 }
                 using (var stream = new MemoryStream())

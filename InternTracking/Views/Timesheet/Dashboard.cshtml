@@ -1,0 +1,54 @@
+﻿
+<html>
+    <body>
+
+<div class="container mt-4">
+    <h2 class="mb-4">📊 Intern Dashboard</h2>
+
+    <div class="row">
+        <div class="col-md-6">
+            <canvas id="internSummaryChart"></canvas>
+        </div>
+        <div class="col-md-6">
+            <canvas id="internDeptPieChart"></canvas>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    // Bar Chart for Intern Summary
+    const ctx1 = document.getElementById('internSummaryChart').getContext('2d');
+    const internSummaryChart = new Chart(ctx1, {
+        type: 'bar',
+        data: {
+            labels: ['Total Interns', 'New This Month'],
+            datasets: [{
+                label: 'Count',
+                data: [@ViewBag.TotalInterns, @ViewBag.NewInterns],
+                backgroundColor: ['#4caf50', '#2196f3']
+            }]
+        }
+    });
+
+    // Pie Chart for Department Distribution
+    const ctx2 = document.getElementById('internDeptPieChart').getContext('2d');
+    const deptLabels = @Html.Raw(Json.Serialize(ViewBag.DeptChartLabels));
+    const deptData = @Html.Raw(Json.Serialize(ViewBag.DeptChartData));
+
+    const internDeptPieChart = new Chart(ctx2, {
+        type: 'pie',
+        data: {
+            labels: deptLabels,
+            datasets: [{
+                label: 'Interns by Department',
+                data: deptData,
+                backgroundColor: ['#ff6384', '#36a2eb', '#ffcd56', '#4bc0c0', '#9966ff']
+            }]
+        }
+    });
+</script>
