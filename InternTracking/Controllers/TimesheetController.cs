@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.EntityFrameworkCore;
 using System;
+using QRCoder;
 using System.Diagnostics;
 using System.Threading.Tasks;
 
@@ -318,13 +319,14 @@ namespace InternTracking.Controllers
                 return RedirectToAction("InternDetails");
             }
 
-            string certUrl = Url.Action("Verify","Intern",new { id = Internid }, Request.Scheme);
-            string qrCode = QrHelper.GenerateQrCodeBase64(certUrl);
-            ViewBag.QRCodeBase64 = qrCode;
+            string certUrl = $"{Request.Scheme}://{Request.Host}/Timesheet/Verify?id={Internid}";
+            string qrBase64 = QrHelper.GenerateQrCodeBase64(certUrl);
+
+            ViewBag.QrCode = qrBase64;
 
             var html = await _viewRenderService.RenderViewToStringAsync("CertificateTemplate", intern);
 
-            var Renderer = new ChromePdfRenderer();
+            var Renderer = new IronPdf.HtmlToPdf();
             var pdf = Renderer.RenderHtmlAsPdf(html);
             byte[] pdfBytes = pdf.BinaryData;
 
@@ -343,10 +345,33 @@ namespace InternTracking.Controllers
             {
                 TempData["Error"] = "Failed to send certificate. " + ex.Message;
             }
-
-
-            return RedirectToAction("InternDetails");
+            return File(pdfBytes, "application/pdf", $"{intern.Name}_Certificate.pdf");
+            //return RedirectToAction("InternDetails");
 
         }
+
+        public IActionResult Verify(int id)
+        {
+            var intern = context.Interns.FirstOrDefault(i => i.Id == id);
+            if (intern == null) return View("NotFound");
+
+            return View("Verify", intern);
+        }
+
+        public IActionResult PreviewCertificate(int internId)
+        {
+            var intern = context.Interns.FirstOrDefault(i => i.Id == internId);
+            if (intern == null)
+                return NotFound();
+
+            string certUrl = $"{Request.Scheme}://{Request.Host}/Timesheet/Verify?id={internId}";
+            string qrBase64 = QrHelper.GenerateQrCodeBase64(certUrl);
+
+            ViewBag.QrCode = qrBase64;
+
+            return View("CertificateTemplate", intern);
+        }
+
+
     }
 }

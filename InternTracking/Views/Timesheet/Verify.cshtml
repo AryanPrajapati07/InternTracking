@@ -1,0 +1,38 @@
+﻿@model Intern
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Certificate Verification</title>
+    <style>
+        body {
+            font-family: Arial;
+            padding: 40px;
+            background: #f8f9fa;
+        }
+
+        .card {
+            padding: 30px;
+            border: 1px solid #ccc;
+            background: white;
+            border-radius: 10px;
+            max-width: 500px;
+            margin: auto;
+        }
+
+        h2 {
+            color: #4CAF50;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>Certificate Verified ✅</h2>
+        <p><strong>Name:</strong> @Model.Name</p>
+        <p><strong>Email:</strong> @Model.Email</p>
+        <p><strong>Intern ID:</strong> @Model.Id</p>
+        <p><strong>Issued On:</strong> @DateTime.Now.ToString("dd MMM yyyy")</p>
+    </div>
+</body>
+</html>

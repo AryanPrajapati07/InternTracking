@@ -1,26 +1,22 @@
 ﻿@model Intern
-
 @{
-    var completionDate = DateTime.Now.ToString("dd MMMM yyyy");
+    string qrCode = ViewBag.QrCode as string;
 }
+
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="utf-8" />
     <style>
         body {
-            font-family: 'Georgia', serif;
+            font-family: Arial;
             text-align: center;
-            padding: 40px;
-            background: #fdfdfd;
-        }
-
-        .certificate {
-            border: 10px solid #1e90ff;
             padding: 50px;
         }
 
-        .logo {
-            width: 100px;
+        .certificate {
+            border: 10px solid #4CAF50;
+            padding: 40px;
         }
 
         .qr {
@@ -30,21 +26,23 @@
 </head>
 <body>
     <div class="certificate">
-        <img src="https://yourdomain.com/logo.png" class="logo" />
-        <h1>Certificate of Completion</h1>
-        <p>This is to certify that</p>
+        <h1>Certificate of Internship</h1>
+        <p>This certifies that</p>
         <h2>@Model.Name</h2>
-        <p>has successfully completed the internship at</p>
-        <h3>Your Company Name</h3>
-        <p>on @completionDate</p>
-
-        @if (ViewBag.QRCodeBase64 != null)
-        {
-            <div class="qr">
-                <img src="data:image/png;base64,@ViewBag.QRCodeBase64" width="100" />
-                <p>Scan for verification</p>
-            </div>
-        }
+        <p>has completed the internship.</p>
+        @* <p>Email: @Model.Email</p> *@
+        <p>Date: @DateTime.Now.ToString("dd MMMM yyyy")</p>
+        <div class="qr">
+            @if (!string.IsNullOrEmpty(qrCode))
+            {
+                <p>Scan to Verify:</p>
+                <img src="data:image/png;base64,@qrCode" width="150" />
+            }
+            else
+            {
+                <p style="color:red;">QR code not available</p>
+            }
+        </div>
     </div>
 </body>
 </html>
