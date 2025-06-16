@@ -1,4 +1,5 @@
 ﻿using ClosedXML.Excel;
+using com.sun.xml.@internal.bind.v2.runtime;
 using DinkToPdf;
 using DinkToPdf.Contracts;
 using InternTracking.Helpers;
@@ -13,6 +14,8 @@ using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace InternTracking.Controllers
 {
@@ -20,13 +23,14 @@ namespace InternTracking.Controllers
     {
         private readonly ApplicationDbContext context;
         private readonly IConverter converter;
-        private readonly object _viewRenderService;
+        private readonly IRazorViewToStringRenderer _viewRenderService;
 
-        public TimesheetController(ApplicationDbContext context,IConverter converter)
+        public TimesheetController(ApplicationDbContext context, IConverter converter,IRazorViewToStringRenderer _viewRenderedService)
         {
             this.context = context;
             this.converter = converter;
-           
+            this._viewRenderService = _viewRenderedService;
+
         }
 
         //Add Intern Data
@@ -130,7 +134,7 @@ namespace InternTracking.Controllers
         public IActionResult MyEntries()
         {
             var all = context.Timesheets.Include(t => t.Intern).ToList();
-            
+
             return View(all);
         }
 
@@ -179,8 +183,8 @@ namespace InternTracking.Controllers
 
             ViewBag.TotalInterns = totalInterns;
             ViewBag.NewInterns = newInternsThisMonth;
-            ViewBag.DeptChartLabels = internsByDepartment.Select(d=>d.Department).ToList();
-            ViewBag.DeptChartData = internsByDepartment.Select(d=>d.Count).ToList();
+            ViewBag.DeptChartLabels = internsByDepartment.Select(d => d.Department).ToList();
+            ViewBag.DeptChartData = internsByDepartment.Select(d => d.Count).ToList();
 
 
             return View();
@@ -240,7 +244,7 @@ namespace InternTracking.Controllers
                 searchTerm = searchTerm.ToLower();
                 query = query.Where(i => i.Name.ToLower().Contains(searchTerm) || i.Email.ToLower().Contains(searchTerm));
             }
-            var interns = query.Select(i=>new
+            var interns = query.Select(i => new
             {
                 i.Id,
                 i.Name,
@@ -271,7 +275,7 @@ namespace InternTracking.Controllers
                 using (var stream = new MemoryStream())
                 {
                     workbook.SaveAs(stream);
-                   
+
                     return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"Interns_{DateTime.Now:yyyyMMdd}.xlsx");
                 }
             }
@@ -280,18 +284,13 @@ namespace InternTracking.Controllers
         //send PDF by email
         public async Task<IActionResult> SendPdfEmail()
         {
-            // Step 1: Get the intern list
+
             var interns = context.Interns.ToList();
-
-            // Step 2: Render Razor View to HTML
             var html = await RenderViewToStringAsync("InternDetails", interns);
-
-            // Step 3: Generate PDF in memory
             var Renderer = new IronPdf.ChromePdfRenderer();
             var pdf = Renderer.RenderHtmlAsPdf(html);
             byte[] pdfBytes = pdf.BinaryData;
 
-            // Step 4: Email PDF without saving to disk
             string toEmail = "aryan22.excelsior@gmail.com";
             string subject = "Intern Report PDF";
             string body = "Attached is the latest intern report.";
@@ -310,9 +309,44 @@ namespace InternTracking.Controllers
             return RedirectToAction("InternDetails");
         }
 
-        
+        //Certificate Generation
+        public async Task<IActionResult> GenerateCertificate(int Internid)
+        {
+            var intern = context.Interns.FirstOrDefault(i => i.Id == Internid);
+            if (intern == null) {
+                TempData["Error"] = "Intern not found.";
+                return RedirectToAction("InternDetails");
+            }
+
+            string certUrl = Url.Action("Verify","Intern",new { id = Internid }, Request.Scheme);
+            string qrCode = QrHelper.GenerateQrCodeBase64(certUrl);
+            ViewBag.QRCodeBase64 = qrCode;
+
+            var html = await _viewRenderService.RenderViewToStringAsync("CertificateTemplate", intern);
+
+            var Renderer = new ChromePdfRenderer();
+            var pdf = Renderer.RenderHtmlAsPdf(html);
+            byte[] pdfBytes = pdf.BinaryData;
+
+            try
+            {
+                EmailService.SendEmailWithAttachmentFromStream(
+                    intern.Email,
+                    "Your Internship Certificate", 
+                    "Dear " + intern.Name + ",\n\nPlease find your certificate attached.",
+                    pdfBytes,
+                    "InternshipCertificate.pdf"
+                );
+                TempData["Success"] = "Certificate sent successfully to your Email!";
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Failed to send certificate. " + ex.Message;
+            }
 
 
+            return RedirectToAction("InternDetails");
 
+        }
     }
 }

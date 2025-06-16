@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using QRCoder;
+using System.Net;
 using System.Net.Mail;
 
 namespace InternTracking.Helpers
@@ -28,7 +29,21 @@ namespace InternTracking.Helpers
 
                 smtpClient.Send(mail);
             }
-        
+
+        public static string GenerateQrCodeBase64(string url)
+        {
+            using (var qrGenerator = new QRCodeGenerator())
+            {
+                var qrCodeData = qrGenerator.CreateQrCode(url, QRCodeGenerator.ECCLevel.Q);
+                var qrCode = new PngByteQRCode(qrCodeData);
+                byte[] qrCodeBytes = qrCode.GetGraphic(20);
+                return Convert.ToBase64String(qrCodeBytes);
+            }
+        }
+
 
     }
-}
+
+
+    
+    }

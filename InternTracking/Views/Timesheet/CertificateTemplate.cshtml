@@ -1,0 +1,50 @@
+﻿@model Intern
+
+@{
+    var completionDate = DateTime.Now.ToString("dd MMMM yyyy");
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            font-family: 'Georgia', serif;
+            text-align: center;
+            padding: 40px;
+            background: #fdfdfd;
+        }
+
+        .certificate {
+            border: 10px solid #1e90ff;
+            padding: 50px;
+        }
+
+        .logo {
+            width: 100px;
+        }
+
+        .qr {
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="certificate">
+        <img src="https://yourdomain.com/logo.png" class="logo" />
+        <h1>Certificate of Completion</h1>
+        <p>This is to certify that</p>
+        <h2>@Model.Name</h2>
+        <p>has successfully completed the internship at</p>
+        <h3>Your Company Name</h3>
+        <p>on @completionDate</p>
+
+        @if (ViewBag.QRCodeBase64 != null)
+        {
+            <div class="qr">
+                <img src="data:image/png;base64,@ViewBag.QRCodeBase64" width="100" />
+                <p>Scan for verification</p>
+            </div>
+        }
+    </div>
+</body>
+</html>

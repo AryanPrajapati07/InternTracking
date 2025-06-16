@@ -70,6 +70,10 @@
                             <td>
                                 <a href="@Url.Action("EditIntern", new { id = interns.Id })" class="btn btn-sm btn-warning">Edit</a>
                                 <a href="@Url.Action("DeleteIntern", new { id = interns.Id })" class="btn btn-sm btn-danger">Delete</a>
+                                <a href="@Url.Action("GenerateCertificate", "Timesheet", new { internId = interns.Id })" class="btn btn-success">
+                                    Generate Certificate
+                                </a>
+
                             </td>
 
                         </tr>
