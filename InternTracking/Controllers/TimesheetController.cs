@@ -17,6 +17,9 @@ using System;
 using QRCoder;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using System.IO.Compression;
+using DocumentFormat.OpenXml.Spreadsheet;
+using java.util.zip;
 
 namespace InternTracking.Controllers
 {
@@ -26,7 +29,7 @@ namespace InternTracking.Controllers
         private readonly IConverter converter;
         private readonly IRazorViewToStringRenderer _viewRenderService;
 
-        public TimesheetController(ApplicationDbContext context, IConverter converter,IRazorViewToStringRenderer _viewRenderedService)
+        public TimesheetController(ApplicationDbContext context, IConverter converter, IRazorViewToStringRenderer _viewRenderedService)
         {
             this.context = context;
             this.converter = converter;
@@ -314,7 +317,8 @@ namespace InternTracking.Controllers
         public async Task<IActionResult> GenerateCertificate(int Internid)
         {
             var intern = context.Interns.FirstOrDefault(i => i.Id == Internid);
-            if (intern == null) {
+            if (intern == null)
+            {
                 TempData["Error"] = "Intern not found.";
                 return RedirectToAction("InternDetails");
             }
@@ -339,7 +343,7 @@ namespace InternTracking.Controllers
             {
                 EmailService.SendEmailWithAttachmentFromStream(
                     intern.Email,
-                    "Your Internship Certificate", 
+                    "Your Internship Certificate",
                     "Dear " + intern.Name + ",\n\nPlease find your certificate attached.",
                     pdfBytes,
                     "InternshipCertificate.pdf"
@@ -355,6 +359,7 @@ namespace InternTracking.Controllers
 
         }
 
+        // QR code verify
         public IActionResult Verify(int id)
         {
             var intern = context.Interns.FirstOrDefault(i => i.Id == id);
@@ -377,6 +382,42 @@ namespace InternTracking.Controllers
             return View("CertificateTemplate", intern);
         }
 
+        // download all certificates as ZIP file
+        public async Task<IActionResult> DownloadAllCertificatesAsZip()
+        {
+            var interns = context.Interns.ToList();
+            if (!interns.Any())
+            {
+                TempData["Error"] = "No interns Found";
+                return RedirectToAction("InternDetails");
+            }
+            var renderer = new IronPdf.HtmlToPdf();
+            using var zipStream = new MemoryStream();
+            using (var archive = new ZipArchive(zipStream, ZipArchiveMode.Create, true))
+            {
+                foreach (var intern in interns)
+                {
+                    string certUrl = $"{Request.Scheme}://{Request.Host}/Timesheet/Verify?id={intern.Id}";
+                    string qrBase64 = QrHelper.GenerateQrCodeBase64(certUrl);
+
+                    var viewData = new Dictionary<string, object>
+                    {
+                        { "QrCode", qrBase64 }
+                    };
+
+                    var html = await _viewRenderService.RenderViewToStringAsync("CertificateTemplate", intern, viewData);
+
+                    var pdf = renderer.RenderHtmlAsPdf(html);
+                    byte[] pdfBytes = pdf.BinaryData;
+
+                    var entry = archive.CreateEntry($"{intern.Name}_Certificate.pdf");
+                    using var entryStream = entry.Open();
+                    entryStream.Write(pdfBytes, 0, pdfBytes.Length);
+                }
+            }
+            zipStream.Seek(0, SeekOrigin.Begin);
+            return File(zipStream.ToArray(), "application/zip", "All_Intern_Certificates.zip");
+        }
 
     }
 }

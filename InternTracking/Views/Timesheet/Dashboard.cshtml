@@ -1,54 +1,218 @@
-﻿
-<html>
-    <body>
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intern Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: white;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
 
-<div class="container mt-4">
-    <h2 class="mb-4">📊 Intern Dashboard</h2>
+        .container {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 2rem;
+            margin-top: 2rem;
+        }
 
-    <div class="row">
-        <div class="col-md-6">
-            <canvas id="internSummaryChart"></canvas>
-        </div>
-        <div class="col-md-6">
-            <canvas id="internDeptPieChart"></canvas>
+        h2 {
+            color: #333;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border: 1px solid rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            margin-bottom: 1rem;
+        }
+
+            .chart-container:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+            }
+
+        canvas {
+            max-height: 350px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <h2 class="mb-4">📊 Intern Dashboard</h2>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <canvas id="internSummaryChart"></canvas>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <canvas id="internDeptPieChart"></canvas>
+                </div>
+            </div>
         </div>
     </div>
-</div>
 
+    <script>
+        // Sample data for demo - replace with your ViewBag data
+        const totalInterns = @ViewBag.TotalInterns; // Replace with @ViewBag.TotalInterns
+        const newInterns = @ViewBag.NewInterns;    // Replace with @ViewBag.NewInterns
+        const deptLabels = @Html.Raw(Json.Serialize(ViewBag.DeptChartLabels)); // Replace with ViewBag data
+        const deptData = @Html.Raw(Json.Serialize(ViewBag.DeptChartData)); // Replace with ViewBag data
+
+        // Enhanced Bar Chart for Intern Summary
+        const ctx1 = document.getElementById('internSummaryChart').getContext('2d');
+        const internSummaryChart = new Chart(ctx1, {
+            type: 'bar',
+            data: {
+                labels: ['Total Interns', 'New This Month'],
+                datasets: [{
+                    label: 'Count',
+                    data: [totalInterns, newInterns],
+                    backgroundColor: [
+                        'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)'
+                    ],
+                    borderColor: ['#667eea', '#f5576c'],
+                    borderWidth: 2,
+                    borderRadius: 10,
+                    borderSkipped: false,
+                    hoverBackgroundColor: ['rgba(102, 126, 234, 0.8)', 'rgba(245, 87, 108, 0.8)'],
+                    hoverBorderWidth: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0,0,0,0.8)',
+                        titleColor: 'white',
+                        bodyColor: 'white',
+                        cornerRadius: 10,
+                        displayColors: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0,0,0,0.1)',
+                            drawBorder: false
+                        },
+                        ticks: {
+                            color: '#666',
+                            font: {
+                                size: 12
+                            }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            color: '#666',
+                            font: {
+                                size: 12,
+                                weight: 'bold'
+                            }
+                        }
+                    }
+                },
+                animation: {
+                    duration: 1500,
+                    easing: 'easeInOutQuart'
+                }
+            }
+        });
+
+        // Enhanced Pie Chart for Department Distribution
+        const ctx2 = document.getElementById('internDeptPieChart').getContext('2d');
+        const internDeptPieChart = new Chart(ctx2, {
+            type: 'doughnut',
+            data: {
+                labels: deptLabels,
+                datasets: [{
+                    label: 'Interns by Department',
+                    data: deptData,
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.8)',
+                        'rgba(54, 162, 235, 0.8)',
+                        'rgba(255, 205, 86, 0.8)',
+                        'rgba(75, 192, 192, 0.8)',
+                        'rgba(153, 102, 255, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgb(255, 99, 132)',
+                        'rgb(54, 162, 235)',
+                        'rgb(255, 205, 86)',
+                        'rgb(75, 192, 192)',
+                        'rgb(153, 102, 255)'
+                    ],
+                    borderWidth: 3,
+                    hoverBorderWidth: 5,
+                    hoverOffset: 15
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '60%',
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            usePointStyle: true,
+                            pointStyle: 'circle',
+                            padding: 20,
+                            font: {
+                                size: 12,
+                                weight: 'bold'
+                            },
+                            color: '#333'
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0,0,0,0.8)',
+                        titleColor: 'white',
+                        bodyColor: 'white',
+                        cornerRadius: 10,
+                        callbacks: {
+                            label: function(context) {
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
+                            }
+                        }
+                    }
+                },
+                animation: {
+                    animateRotate: true,
+                    animateScale: true,
+                    duration: 2000,
+                    easing: 'easeInOutQuart'
+                }
+            }
+        });
+    </script>
 </body>
 </html>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<script>
-    // Bar Chart for Intern Summary
-    const ctx1 = document.getElementById('internSummaryChart').getContext('2d');
-    const internSummaryChart = new Chart(ctx1, {
-        type: 'bar',
-        data: {
-            labels: ['Total Interns', 'New This Month'],
-            datasets: [{
-                label: 'Count',
-                data: [@ViewBag.TotalInterns, @ViewBag.NewInterns],
-                backgroundColor: ['#4caf50', '#2196f3']
-            }]
-        }
-    });
-
-    // Pie Chart for Department Distribution
-    const ctx2 = document.getElementById('internDeptPieChart').getContext('2d');
-    const deptLabels = @Html.Raw(Json.Serialize(ViewBag.DeptChartLabels));
-    const deptData = @Html.Raw(Json.Serialize(ViewBag.DeptChartData));
-
-    const internDeptPieChart = new Chart(ctx2, {
-        type: 'pie',
-        data: {
-            labels: deptLabels,
-            datasets: [{
-                label: 'Interns by Department',
-                data: deptData,
-                backgroundColor: ['#ff6384', '#36a2eb', '#ffcd56', '#4bc0c0', '#9966ff']
-            }]
-        }
-    });
-</script>

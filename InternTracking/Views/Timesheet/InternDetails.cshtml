@@ -21,6 +21,9 @@
         <a href="@Url.Action("ExportToExcel", "Timesheet", new { searchTerm = ViewBag.SearchTerm })" class="btn btn-success mb-3">
             Export to Excel
         </a>
+        <a href="/Timesheet/DownloadAllCertificatesAsZip" class="btn btn-primary mb-3">
+            📥 Download All Certificates (ZIP)
+        </a>
 
         <div class="mb-3">
             <a href="@Url.Action("SendPdfEmail", "Timesheet")" class="btn btn-outline-primary">
