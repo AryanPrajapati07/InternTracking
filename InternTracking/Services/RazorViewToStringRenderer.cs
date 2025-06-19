@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -29,37 +30,43 @@ public class RazorViewToStringRenderer : IRazorViewToStringRenderer
         _actionContextAccessor = actionContextAccessor;
     }
 
-    public async Task<string> RenderViewToStringAsync(string viewName, object model)
+    // Fix for CS0111: Removed duplicate method definition
+    public async Task<string> RenderViewToStringAsync(string viewName, object model, Dictionary<string, object>? viewData = null) 
     {
         var actionContext = _actionContextAccessor.ActionContext;
 
         var viewResult = _viewEngine.FindView(actionContext, viewName, false);
-
         if (viewResult.View == null)
-        {
             throw new ArgumentNullException($"{viewName} does not match any available view.");
-        }
 
-        using (var sw = new StringWriter())
+        using var sw = new StringWriter();
+
+        var vdd = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary())
         {
-            var viewDictionary = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary())
+            Model = model
+        };
+
+        // Set custom ViewData items (like QR code)
+        if (viewData != null)
+        {
+            foreach (var kvp in viewData)
             {
-                Model = model
-            };
-
-            var tempData = new TempDataDictionary(actionContext.HttpContext, _tempDataProvider);
-
-            var viewContext = new ViewContext(
-                actionContext,
-                viewResult.View,
-                viewDictionary,
-                tempData,
-                sw,
-                new HtmlHelperOptions()
-            );
-
-            await viewResult.View.RenderAsync(viewContext);
-            return sw.ToString();
+                vdd[kvp.Key] = kvp.Value;
+            }
         }
+
+        var tempData = new TempDataDictionary(actionContext.HttpContext, _tempDataProvider);
+
+        var viewContext = new ViewContext(
+            actionContext,
+            viewResult.View,
+            vdd,
+            tempData,
+            sw,
+            new HtmlHelperOptions()
+        );
+
+        await viewResult.View.RenderAsync(viewContext);
+        return sw.ToString();
     }
 }

@@ -1,7 +1,9 @@
 ﻿@model Intern
 @{
-    string qrCode = ViewBag.QrCode as string;
+    string qrCode = ViewData["QrCode"] as string;
+
 }
+
 
 <!DOCTYPE html>
 <html>

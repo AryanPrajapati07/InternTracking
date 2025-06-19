@@ -320,11 +320,16 @@ namespace InternTracking.Controllers
             }
 
             string certUrl = $"{Request.Scheme}://{Request.Host}/Timesheet/Verify?id={Internid}";
+            //string certUrl = $"{Request.Scheme}://Google.com";
             string qrBase64 = QrHelper.GenerateQrCodeBase64(certUrl);
 
-            ViewBag.QrCode = qrBase64;
+            var viewData = new Dictionary<string, object>
+            {
+                { "QrCode", qrBase64 }
+            };
 
-            var html = await _viewRenderService.RenderViewToStringAsync("CertificateTemplate", intern);
+            var html = await _viewRenderService.RenderViewToStringAsync("CertificateTemplate", intern, viewData);
+
 
             var Renderer = new IronPdf.HtmlToPdf();
             var pdf = Renderer.RenderHtmlAsPdf(html);
