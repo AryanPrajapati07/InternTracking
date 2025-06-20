@@ -1,0 +1,25 @@
+﻿@model List<ActivityLog>
+
+<h3>📝 Activity Logs</h3>
+
+<table class="table table-bordered">
+    <thead class="table-light">
+        <tr>
+            <th>Time</th>
+            <th>Action</th>
+            <th>Admin</th>
+            <th>Details</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var log in Model)
+        {
+            <tr>
+                <td>@log.Timestamp.ToString("dd MMM yyyy hh:mm tt")</td>
+                <td>@log.Action</td>
+                <td>@log.AdminName</td>
+                <td>@log.Details</td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -25,6 +25,8 @@ namespace InternTracking.Controllers
 {
     public class TimesheetController : Controller
     {
+        private const string StaticAdminName = "Aryan Prajapati";
+
         private readonly ApplicationDbContext context;
         private readonly IConverter converter;
         private readonly IRazorViewToStringRenderer _viewRenderService;
@@ -85,6 +87,9 @@ namespace InternTracking.Controllers
             if (intern == null) return NotFound();
             context.Interns.Remove(intern);
             context.SaveChanges();
+
+            LogActivity("Deleted Intern", $"Deleted Intern {intern.Name} (ID: {intern.Id})");
+            TempData["Success"] = "Intern deleted successfully!";
             return RedirectToAction("InternDetails");
         }
 
@@ -348,6 +353,10 @@ namespace InternTracking.Controllers
                     pdfBytes,
                     "InternshipCertificate.pdf"
                 );
+
+                LogActivity("Sent Certificate", $"Certificate sent to {intern.Name} ({intern.Email})");
+
+
                 TempData["Success"] = "Certificate sent successfully to your Email!";
             }
             catch (Exception ex)
@@ -418,6 +427,22 @@ namespace InternTracking.Controllers
             zipStream.Seek(0, SeekOrigin.Begin);
             return File(zipStream.ToArray(), "application/zip", "All_Intern_Certificates.zip");
         }
+
+
+        //track Log Activity
+        private void LogActivity(string action, string details)
+        {
+            var log = new ActivityLog
+            {
+                Action = action,
+                AdminName = StaticAdminName,
+                Timestamp = DateTime.Now,
+                Details = details
+            };
+            context.ActivityLogs.Add(log);
+            context.SaveChanges();
+        }
+
 
     }
 }

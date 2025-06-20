@@ -13,6 +13,7 @@ namespace InternTracking.Services
 
         public DbSet<Intern> Interns { get; set; }
         public DbSet<Timesheet> Timesheets { get; set; }
+        public DbSet<ActivityLog> ActivityLogs { get; set; }
 
     }
 }
